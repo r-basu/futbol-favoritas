@@ -1,5 +1,18 @@
-const { Schema, model } = require('mongoose');
+const { Model, DataTypes } = require("sequelize");
+const sequelize = require("../config/connection");
 
-const Club = model('club', clubSchema);
+class Club extends Model {}
+
+Club.init(
+  {
+    apiClubId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+  },
+  {
+    sequelize,
+  }
+);
 
 module.exports = Club;
