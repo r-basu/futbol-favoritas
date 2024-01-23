@@ -11,26 +11,29 @@ const { Club, User } = require("../models");
 //     })
 // })
 
-//FETCH Premier League Competition
+//FETCH All Teams and Players in Premier League Competition
 router.get("/", (req, res) => {
-  try {
-    const url = "https://api.football-data.org/v4/competitions/PL/teams";
-    const fetchOptions = {
-        method: "GET",
-        headers: {
-          "X-Auth-Token": process.env.API_KEY,
-        },
-    }
-    fetch(url, fetchOptions)
-    .then(response => response.json())
-    .then(data => {
-        const { teams } = data
-        res.json(teams)
-    })
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ msg: "an error occurred", err });
-  }
+    try {
+        const url = "https://api.football-data.org/v4/competitions/PL/teams";
+        const fetchOptions = {
+            method: "GET",
+            headers: {
+              "X-Auth-Token": process.env.API_KEY,
+            },
+        }
+        fetch(url, fetchOptions)
+        .then(response => response.json())
+        .then(apiCompetition => {
+            const { teams } = apiCompetition
+            const names = teams.map((obj) => obj.name);
+            const squad = teams.map((obj) => obj.squad)
+
+            res.json(names);
+        })
+      } catch (err) {
+        console.log(err);
+        res.status(500).json({ msg: "an error occurred", err });
+      }
 });
 
 // // CREATE a club
