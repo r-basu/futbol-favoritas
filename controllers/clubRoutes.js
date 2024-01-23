@@ -25,10 +25,24 @@ router.get("/", (req, res) => {
         .then(response => response.json())
         .then(apiCompetition => {
             const { teams } = apiCompetition
-            const names = teams.map((obj) => obj.name);
-            const squad = teams.map((obj) => obj.squad)
+            // const { id: squadId, name: squadName } = teams
 
-            res.json(names);
+            // const names = teams.map((obj) => obj.name);
+
+            const teamData = teams.map((team) => {
+                squadData = team.squad.map((player) => {
+                    return {
+                        id: player.id,
+                        name: player.name
+                    }
+                })
+                return {
+                    id: team.id,
+                    name: team.name,
+                    squadData,
+                }
+            })
+            res.json(teamData);
         })
       } catch (err) {
         console.log(err);
@@ -36,29 +50,32 @@ router.get("/", (req, res) => {
       }
 });
 
-// // CREATE a club
-// router.post("/", async (req, res) => {
-//     try {
-//       fetch("https://api.football-data.org/v4/persons/16275", {
-//         headers: {
-//           Authorization: `Bearer ${process.env.API_KEY}`,
-//         },
-//       })
-//         .then((response) => response.json())
-//         .then((data) => {
-//           const { id } = data;
+// CREATE a pinned club
+router.post("/", async (req, res) => {
+    try {
+        const url = "https://api.football-data.org/v4/teams/61";
+        const fetchOptions = {
+            method: "GET",
+            headers: {
+              "X-Auth-Token": process.env.API_KEY,
+            },
+        }
+        fetch(url, fetchOptions)
+        .then((response) => response.json())
+        .then((data) => {
+          const { id } = data;
 
-//           const modelInstance = new Player();
-//           modelInstance.playerID = id;
+          const modelInstance = new Club();
+          modelInstance.apiClubId = id;
 
-//           return modelInstance.save();
-//         })
-//         .then((savedInstance) => {
-//           console.log("Model instance saved:", savedInstance);
-//         });
-//     } catch (err) {
-//       res.status(400).json(err);
-//     }
-//   });
+          return modelInstance.save();
+        })
+        .then((savedInstance) => {
+          console.log("Model instance saved:", savedInstance);
+        });
+    } catch (err) {
+      res.status(400).json(err);
+    }
+  });
 
 module.exports = router;
