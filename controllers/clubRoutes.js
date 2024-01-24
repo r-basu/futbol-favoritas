@@ -53,28 +53,16 @@ router.get("/", (req, res) => {
 // CREATE a pinned club
 router.post("/", async (req, res) => {
     try {
-        const url = "https://api.football-data.org/v4/teams/61";
-        const fetchOptions = {
-            method: "GET",
-            headers: {
-              "X-Auth-Token": process.env.API_KEY,
-            },
-        }
-        fetch(url, fetchOptions)
-        .then((response) => response.json())
-        .then((data) => {
-          const { id } = data;
+      const { selectedClub } = req.body;
 
-          const modelInstance = new Club();
-          modelInstance.apiClubId = id;
-
-          return modelInstance.save();
-        })
-        .then((savedInstance) => {
-          console.log("Model instance saved:", savedInstance);
-        });
-    } catch (err) {
-      res.status(400).json(err);
+      const newClub = await Club.create({
+        apiClubId: selectedClub
+        //TODO ADD USERID
+      })
+      res.status(201).json(newClub);
+    } catch (error) {
+      console.log('Error adding club:', error);
+      res.status(500).json({ error: 'Failed to create club' });
     }
   });
 
