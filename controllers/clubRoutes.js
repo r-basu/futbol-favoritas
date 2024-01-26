@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { Club, User } = require("../models");
+const withTokenAuth = require("../middleware/withTokenAuth");
 
 // router.get("/",(req,res)=>{
 //     Club.findAll().then(clubs=>{
@@ -66,23 +67,26 @@ router.post("/", async (req, res) => {
   }
 });
 
-// Fetch all saved apiClubId's in database
-router.get("/pins", async (req, res) => {
+// Fetch all saved apiClubId's matching userId in database
+router.get("/pins", withTokenAuth, async (req, res) => {
   try {
-    const clubIds = await Club.findAll({
+    const userId = req.tokenData.id;
+
+    const clubsData = await Club.findAll({
+      where: { UserId: userId },
       attributes: ["apiClubId"],
     });
 
-    const apiClubIds = clubIds.map((club) => club.apiClubId);
+    const apiClubIds = clubsData.map((club) => club.apiClubId)
 
-    const clubsData = await Promise.all(
+    const clubsInfo = await Promise.all(
       apiClubIds.map(async (apiClubId) => {
         try {
           const response = await fetch(
             `https://api.football-data.org/v4/teams/${apiClubId}`,
             {
               headers: {
-                "X-Auth-Token": process.env.API_KEY
+                "X-Auth-Token": process.env.API_KEY,
               },
             }
           );
@@ -95,7 +99,7 @@ router.get("/pins", async (req, res) => {
       })
     );
 
-    res.status(201).json(clubsData);
+    res.status(201).json(clubsInfo);
   } catch (error) {
     console.log("Error retrieving club ids", error);
     res.status(500).json({ error: "Error retrieving club ids" });
