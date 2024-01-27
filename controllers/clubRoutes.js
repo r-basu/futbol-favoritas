@@ -3,17 +3,55 @@ const router = express.Router();
 const { Club, User } = require("../models");
 const withTokenAuth = require("../middleware/withTokenAuth");
 
-// router.get("/",(req,res)=>{
-//     Club.findAll().then(clubs=>{
-//         res.json(clubs)
-//     }).catch(err=>{
-//         console.log(err);;
-//         res.status(500).json({msg:"an error occurred",err});
-//     })
-// })
+//Fetch Single Club based on URL Param ID
+router.get('/club/:id', async (req, res) => {
+  const clubId = req.params.id;
+
+  try {
+      const response = await fetch(`https://api.football-data.org/v4/teams/${clubId}`, {
+        headers: {
+          'X-Auth-Token': process.env.API_KEY, // Replace with your actual Football Data API key
+        },
+      });
+  
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.log('Error fetching club data:', error);
+      res.status(500).send('Error fetching club data');
+    }
+});
+
+//FETCH ALL Competitions
+router.get("/competitions", (req, res) => {
+  try {
+    const url = "https://api.football-data.org/v4/competitions/";
+    const fetchOptions = {
+      method: "GET",
+      headers: {
+        "X-Auth-Token": process.env.API_KEY,
+      },
+    };
+    fetch(url, fetchOptions)
+      .then((response) => response.json())
+      .then((apiCompetition) => {
+        const { competitions } = apiCompetition;
+        const competitionData = competitions.map((competition) => {
+          return {
+            id: competition.id,
+            name: competition.name,
+          };
+        });
+        res.json(competitionData);
+      });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ msg: "an error occurred", err });
+  }
+});
 
 //FETCH All Teams and Players in Premier League Competition
-router.get("/", (req, res) => {
+router.get("/teams", (req, res) => {
   try {
     const url = "https://api.football-data.org/v4/competitions/PL/teams";
     const fetchOptions = {
@@ -26,10 +64,6 @@ router.get("/", (req, res) => {
       .then((response) => response.json())
       .then((apiCompetition) => {
         const { teams } = apiCompetition;
-        // const { id: squadId, name: squadName } = teams
-
-        // const names = teams.map((obj) => obj.name);
-
         const teamData = teams.map((team) => {
           squadData = team.squad.map((player) => {
             return {
@@ -52,13 +86,13 @@ router.get("/", (req, res) => {
 });
 
 // CREATE a pinned club
-router.post("/", async (req, res) => {
+router.post("/teams", withTokenAuth, async (req, res) => {
   try {
     const { selectedClub } = req.body;
 
     const newClub = await Club.create({
       apiClubId: selectedClub,
-      //TODO ADD USERID
+      UserId: req.tokenData.id
     });
     res.status(201).json(newClub);
   } catch (error) {
