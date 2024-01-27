@@ -3,7 +3,9 @@ const router = express.Router();
 const { User, Club } = require("../models");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const withTokenAuth = require("../middleware/withTokenAuth");
 
+//Create User
 router.post("/", (req, res) => {
   User.create({
     email: req.body.email,
@@ -30,6 +32,8 @@ router.post("/", (req, res) => {
       res.status(500).json({ msg: "oh noes!", err });
     });
 });
+
+//Login User
 router.post("/login", (req, res) => {
   User.findOne({
     where: {
@@ -61,6 +65,28 @@ router.post("/login", (req, res) => {
     .catch((err) => {
       console.log(err);
       res.status(500).json({ msg: "oh noes!", err });
+    });
+});
+
+//Signout User
+router.post("/logout", withTokenAuth, (req, res) => {
+  const userId = req.tokenData.id;
+
+  User.findByPk(userId)
+    .then((user) => {
+      if (!user) {
+        return res.status(404).json({ msg: "User not found" });
+      }
+
+      //Clear users token
+      user.token = "";
+      user.save();
+
+      res.json({ msg: "User signed out successfully" });
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json({ msg: "Internal server error" });
     });
 });
 
