@@ -5,7 +5,7 @@ const cors = require("cors");
 const sequelize = require("./config/connection");
 
 const app = express();
-app.use(cors())
+app.use(cors());
 const PORT = process.env.PORT || 3000;
 // Requiring our models for syncing
 const { User, Club } = require("./models");
@@ -14,10 +14,10 @@ const { User, Club } = require("./models");
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-app.use('/',allRoutes);
+app.use("/", allRoutes);
 
-sequelize.sync({ force: false }).then(function() {
-  app.listen(PORT, function() {
-  console.log('App listening on PORT ' + PORT);
+sequelize.sync({ force: false }).then(function () {
+  app.listen(PORT, function () {
+    console.log("App listening on PORT " + PORT);
   });
 });

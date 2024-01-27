@@ -15,9 +15,9 @@ Club.init(
       allowNull: false,
       references: {
         model: User,
-        key: "id"
-      }
-    }
+        key: "id",
+      },
+    },
   },
   {
     sequelize,

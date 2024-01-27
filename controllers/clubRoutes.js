@@ -4,22 +4,25 @@ const { Club, User } = require("../models");
 const withTokenAuth = require("../middleware/withTokenAuth");
 
 //Fetch Single Club based on URL Param ID
-router.get('/club/:id', async (req, res) => {
+router.get("/club/:id", async (req, res) => {
   const clubId = req.params.id;
 
   try {
-      const response = await fetch(`https://api.football-data.org/v4/teams/${clubId}`, {
+    const response = await fetch(
+      `https://api.football-data.org/v4/teams/${clubId}`,
+      {
         headers: {
-          'X-Auth-Token': process.env.API_KEY, // Replace with your actual Football Data API key
+          "X-Auth-Token": process.env.API_KEY, // Replace with your actual Football Data API key
         },
-      });
-  
-      const data = await response.json();
-      res.json(data);
-    } catch (error) {
-      console.log('Error fetching club data:', error);
-      res.status(500).send('Error fetching club data');
-    }
+      }
+    );
+
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.log("Error fetching club data:", error);
+    res.status(500).send("Error fetching club data");
+  }
 });
 
 //FETCH ALL Competitions
@@ -92,7 +95,7 @@ router.post("/teams", withTokenAuth, async (req, res) => {
 
     const newClub = await Club.create({
       apiClubId: selectedClub,
-      UserId: req.tokenData.id
+      UserId: req.tokenData.id,
     });
     res.status(201).json(newClub);
   } catch (error) {
@@ -111,7 +114,7 @@ router.get("/pins", withTokenAuth, async (req, res) => {
       attributes: ["apiClubId"],
     });
 
-    const apiClubIds = clubsData.map((club) => club.apiClubId)
+    const apiClubIds = clubsData.map((club) => club.apiClubId);
 
     const clubsInfo = await Promise.all(
       apiClubIds.map(async (apiClubId) => {
