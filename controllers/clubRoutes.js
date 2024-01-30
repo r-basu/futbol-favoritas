@@ -28,15 +28,51 @@ router.get("/club/:id", async (req, res) => {
 //FETCH ALL Competitions
 router.get("/competitions", async (req, res) => {
   try {
-    const competitions = await Competition.findAll()
-    res.json(competitions)
+    const competitions = await Competition.findAll();
+    res.json(competitions);
   } catch (err) {
     console.log(err);
     res.status(500).json({ msg: "an error occurred", err });
   }
 });
 
-//FETCH All Teams and Players in Premier League Competition
+// FETCH ALL Teams from SPECIFIC Competition
+router.get("/competitionTeams/:id", (req, res) => {
+  const competitionId = req.params.id;
+  try {
+    const url = `https://api.football-data.org/v4/competitions/${competitionId}/teams`;
+    const fetchOptions = {
+      method: "GET",
+      headers: {
+        "X-Auth-Token": process.env.API_KEY,
+      },
+    };
+    fetch(url, fetchOptions)
+      .then((response) => response.json())
+      .then((apiCompetition) => {
+        const { teams } = apiCompetition;
+        const teamData = teams.map((team) => {
+          squadData = team.squad.map((player) => {
+            return {
+              id: player.id,
+              name: player.name,
+            };
+          });
+          return {
+            id: team.id,
+            name: team.name,
+            squadData,
+          };
+        });
+        res.json(teamData);
+      });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ msg: "an error occurred", err });
+  }
+});
+
+//FETCH All Teams and Players in Premier League Competition (NOT IN USE)
 router.get("/teams", (req, res) => {
   try {
     const url = "https://api.football-data.org/v4/competitions/PL/teams";
