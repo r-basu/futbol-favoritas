@@ -1,5 +1,5 @@
 const sequelize = require("../config/connection.js");
-const { User, Club } = require("../models");
+const { User, Club, Competition } = require("../models");
 
 const seedMe = async () => {
   await sequelize.sync({ force: true });
@@ -42,6 +42,28 @@ const seedMe = async () => {
   ];
   const clubSeeds = await Club.bulkCreate(clubData);
   console.table(clubSeeds.map((club) => club.toJSON()));
+  console.log("==============================");
+  try {
+    const response = await fetch('https://api.football-data.org/v4/competitions/', {
+      headers: {
+        "X-Auth-Token": process.env.API_KEY,
+      },
+    })
+    const { competitions } = await response.json();
+    console.log(competitions)
+
+    const competitionsData = competitions.map((competition) => ({
+      apiCompetitionId: competition.id,
+      apiCompetitionName: competition.name
+    }))
+
+    const competitionSeeds = await Competition.bulkCreate(competitionsData);
+    console.table(competitionSeeds.map((comp) => comp.toJSON()))
+
+  } catch (error) {
+    console.log('Error seeding competitions:', error)
+    throw error
+  }
   process.exit(0);
 };
 

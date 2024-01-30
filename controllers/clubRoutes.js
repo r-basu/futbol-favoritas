@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { Club, User } = require("../models");
+const { Club, User, Competition } = require("../models");
 const withTokenAuth = require("../middleware/withTokenAuth");
 
 //Fetch Single Club based on URL Param ID
@@ -26,27 +26,10 @@ router.get("/club/:id", async (req, res) => {
 });
 
 //FETCH ALL Competitions
-router.get("/competitions", (req, res) => {
+router.get("/competitions", async (req, res) => {
   try {
-    const url = "https://api.football-data.org/v4/competitions/";
-    const fetchOptions = {
-      method: "GET",
-      headers: {
-        "X-Auth-Token": process.env.API_KEY,
-      },
-    };
-    fetch(url, fetchOptions)
-      .then((response) => response.json())
-      .then((apiCompetition) => {
-        const { competitions } = apiCompetition;
-        const competitionData = competitions.map((competition) => {
-          return {
-            id: competition.id,
-            name: competition.name,
-          };
-        });
-        res.json(competitionData);
-      });
+    const competitions = await Competition.findAll()
+    res.json(competitions)
   } catch (err) {
     console.log(err);
     res.status(500).json({ msg: "an error occurred", err });
