@@ -73,7 +73,7 @@ router.get("/competitionTeams/:id", (req, res) => {
 });
 
 // CREATE a pinned club
-router.post("/dbClubs", withTokenAuth, async (req, res) => {
+router.post("/pins/club", withTokenAuth, async (req, res) => {
   try {
     const { selectedClubId, selectedClubName } = req.body;
 
@@ -86,6 +86,34 @@ router.post("/dbClubs", withTokenAuth, async (req, res) => {
   } catch (error) {
     console.log("Error adding club:", error);
     res.status(500).json({ error: "Failed to create club" });
+  }
+});
+
+// DELETE a pinned club
+router.delete("/pins/club/:clubId", withTokenAuth, async (req, res) => {
+  try {
+    const clubId = req.params.clubId;
+    const userId = req.tokenData.id;
+
+    // Find the club with the provided clubId and userId
+    const club = await Club.findOne({
+      where: {
+        apiClubId: clubId,
+        UserId: userId,
+      },
+    });
+
+    if (club) {
+      // Delete the club
+      await club.destroy();
+
+      res.status(200).json(club);
+    } else {
+      res.status(404).json({ error: "Club not found" });
+    }
+  } catch (error) {
+    console.log("Error deleting club:", error);
+    res.status(500).json({ error: "Failed to delete club" });
   }
 });
 
