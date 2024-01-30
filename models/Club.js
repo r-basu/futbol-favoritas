@@ -10,6 +10,10 @@ Club.init(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    apiClubName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     UserId: {
       type: DataTypes.INTEGER,
       allowNull: false,

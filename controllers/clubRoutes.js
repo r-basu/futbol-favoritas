@@ -72,48 +72,14 @@ router.get("/competitionTeams/:id", (req, res) => {
   }
 });
 
-//FETCH All Teams and Players in Premier League Competition (NOT IN USE)
-router.get("/teams", (req, res) => {
-  try {
-    const url = "https://api.football-data.org/v4/competitions/PL/teams";
-    const fetchOptions = {
-      method: "GET",
-      headers: {
-        "X-Auth-Token": process.env.API_KEY,
-      },
-    };
-    fetch(url, fetchOptions)
-      .then((response) => response.json())
-      .then((apiCompetition) => {
-        const { teams } = apiCompetition;
-        const teamData = teams.map((team) => {
-          squadData = team.squad.map((player) => {
-            return {
-              id: player.id,
-              name: player.name,
-            };
-          });
-          return {
-            id: team.id,
-            name: team.name,
-            squadData,
-          };
-        });
-        res.json(teamData);
-      });
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ msg: "an error occurred", err });
-  }
-});
-
 // CREATE a pinned club
-router.post("/teams", withTokenAuth, async (req, res) => {
+router.post("/dbClubs", withTokenAuth, async (req, res) => {
   try {
-    const { selectedClub } = req.body;
+    const { selectedClubId, selectedClubName } = req.body;
 
     const newClub = await Club.create({
-      apiClubId: selectedClub,
+      apiClubId: selectedClubId,
+      apiClubName: selectedClubName,
       UserId: req.tokenData.id,
     });
     res.status(201).json(newClub);
@@ -130,32 +96,15 @@ router.get("/pins", withTokenAuth, async (req, res) => {
 
     const clubsData = await Club.findAll({
       where: { UserId: userId },
-      attributes: ["apiClubId"],
+      attributes: ["apiClubId", "apiClubName"],
     });
 
-    const apiClubIds = clubsData.map((club) => club.apiClubId);
+    const apiClubs = clubsData.map((club) => ({
+      dbClubId: club.apiClubId,
+      dbClubName: club.apiClubName,
+    }));
 
-    const clubsInfo = await Promise.all(
-      apiClubIds.map(async (apiClubId) => {
-        try {
-          const response = await fetch(
-            `https://api.football-data.org/v4/teams/${apiClubId}`,
-            {
-              headers: {
-                "X-Auth-Token": process.env.API_KEY,
-              },
-            }
-          );
-          const data = await response.json();
-          return data;
-        } catch (error) {
-          console.log(`Error fetching data for club ID ${apiClubId}`, error);
-          return null;
-        }
-      })
-    );
-
-    res.status(201).json(clubsInfo);
+    res.status(201).json(apiClubs);
   } catch (error) {
     console.log("Error retrieving club ids", error);
     res.status(500).json({ error: "Error retrieving club ids" });
