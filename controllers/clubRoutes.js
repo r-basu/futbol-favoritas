@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { Club, User, Competition } = require("../models");
 const withTokenAuth = require("../middleware/withTokenAuth");
+const moment = require("moment");
 
 //Fetch Single Club based on URL Param ID
 router.get("/club/:id", async (req, res) => {
@@ -136,6 +137,52 @@ router.get("/pins", withTokenAuth, async (req, res) => {
   } catch (error) {
     console.log("Error retrieving club ids", error);
     res.status(500).json({ error: "Error retrieving club ids" });
+  }
+});
+
+//Last 10 games
+router.get("/clubSchedLast/:id", async (req, res) => {
+  const clubId = req.params.id;
+  let schedBefore = moment().calendar();
+  console.log(schedBefore);
+
+  try {
+    const response = await fetch(
+      `https://api.football-data.org/v4/teams/${clubId}/matches?dateFrom=2021-07-01&dateTo=2022-01-01`,
+      {
+        headers: {
+          "X-Auth-Token": process.env.API_KEY, // Replace with your actual Football Data API key
+        },
+      }
+    );
+
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.log("Error fetching club data:", error);
+    res.status(500).send("Error fetching club data");
+  }
+});
+
+//Next 10 games
+router.get("/clubSched/:id", async (req, res) => {
+  const clubId = req.params.id;
+
+  try {
+    const response = await fetch(
+      `https://api.football-data.org/v4/teams/${clubId}/matches?dateFrom=2021-07-01&dateTo=2022-01-01`,
+      {
+        headers: {
+          "X-Auth-Token": process.env.API_KEY, // Replace with your actual Football Data API key
+        },
+      }
+    );
+
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.log("Error fetching club data:", error);
+    res.status(500).send("Error fetching club data");
   }
 });
 
