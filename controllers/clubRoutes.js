@@ -143,12 +143,12 @@ router.get("/pins", withTokenAuth, async (req, res) => {
 //Last 10 games
 router.get("/clubSchedLast/:id", async (req, res) => {
   const clubId = req.params.id;
-  let schedBefore = moment().calendar();
-  console.log(schedBefore);
-
+  let dateNow = moment().format('YYYY-MM-DD')
+  let dateLast = moment().subtract('10', 'weeks').format('YYYY-MM-DD')
+ 
   try {
     const response = await fetch(
-      `https://api.football-data.org/v4/teams/${clubId}/matches?dateFrom=2021-07-01&dateTo=2022-01-01`,
+      `https://api.football-data.org/v4/teams/${clubId}/matches?dateFrom=${dateLast}&dateTo=${dateNow}`,
       {
         headers: {
           "X-Auth-Token": process.env.API_KEY, // Replace with your actual Football Data API key
@@ -167,10 +167,12 @@ router.get("/clubSchedLast/:id", async (req, res) => {
 //Next 10 games
 router.get("/clubSched/:id", async (req, res) => {
   const clubId = req.params.id;
+  let dateNow = moment().format('YYYY-MM-DD')
+  let dateNext = moment().add('10', 'weeks').format('YYYY-MM-DD')
 
   try {
     const response = await fetch(
-      `https://api.football-data.org/v4/teams/${clubId}/matches?dateFrom=2021-07-01&dateTo=2022-01-01`,
+      `https://api.football-data.org/v4/teams/${clubId}/matches?dateFrom=${dateNow}&dateTo=${dateNext}`,
       {
         headers: {
           "X-Auth-Token": process.env.API_KEY, // Replace with your actual Football Data API key
