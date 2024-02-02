@@ -1,10 +1,13 @@
 const User = require("./User");
-const Club = require("./Club");
 const Competition = require("./Competition");
+const Club = require("./Club");
+
 
 User.hasMany(Club, {
   onDelete: "CASCADE",
 });
 Club.belongsTo(User);
+Club.hasOne(Competition);
+Competition.belongsTo(Club);
 
-module.exports = { User, Club, Competition };
+module.exports = { User, Competition, Club  };

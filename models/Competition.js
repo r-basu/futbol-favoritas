@@ -8,6 +8,7 @@ Competition.init(
     apiCompetitionId: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      primaryKey: true,
     },
     apiCompetitionName: {
       type: DataTypes.STRING,

@@ -22,31 +22,6 @@ const seedMe = async () => {
   });
   console.table(userSeeds.map((usr) => usr.toJSON()));
   console.log("==============================");
-  const clubData = [
-    {
-      apiClubId: 61,
-      apiClubName: "Chelsea FC",
-      UserId: 1,
-    },
-    {
-      apiClubId: 563,
-      apiClubName: "West Ham United FC",
-      UserId: 1,
-    },
-    {
-      apiClubId: 65,
-      apiClubName: "Manchester City FC",
-      UserId: 2,
-    },
-    {
-      apiClubId: 76,
-      apiClubName: "Wolverhampton Wanderers FC",
-      UserId: 3,
-    },
-  ];
-  const clubSeeds = await Club.bulkCreate(clubData);
-  console.table(clubSeeds.map((club) => club.toJSON()));
-  console.log("==============================");
   try {
     const response = await fetch(
       "https://api.football-data.org/v4/competitions/",
@@ -69,6 +44,37 @@ const seedMe = async () => {
     console.log("Error seeding competitions:", error);
     throw error;
   }
+  console.log("==============================");
+  const clubData = [
+    {
+      apiClubId: 61,
+      apiClubName: "Chelsea FC",
+      UserId: 1,
+      apiCompetitionId: 2021
+    },
+    {
+      apiClubId: 563,
+      apiClubName: "West Ham United FC",
+      UserId: 1,
+      apiCompetitionId: 2021
+    },
+    {
+      apiClubId: 65,
+      apiClubName: "Manchester City FC",
+      UserId: 2,
+      apiCompetitionId: 2021
+    },
+    {
+      apiClubId: 76,
+      apiClubName: "Wolverhampton Wanderers FC",
+      UserId: 3,
+      apiCompetitionId: 2021
+    },
+  ];
+  const clubSeeds = await Club.bulkCreate(clubData);
+  console.table(clubSeeds.map((club) => club.toJSON()));
+
+
   process.exit(0);
 };
 

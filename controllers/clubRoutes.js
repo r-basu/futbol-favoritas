@@ -5,11 +5,12 @@ const withTokenAuth = require("../middleware/withTokenAuth");
 const moment = require("moment");
 
 //Fetch Single Club based on URL Param ID
-router.get("/club/:id", async (req, res) => {
-  const clubId = req.params.id;
+router.get("/club/:clubId/:competitionId", async (req, res) => {
+  const clubId = req.params.clubId;
+  const competitionId = req.params.competitionId
 
   try {
-    const response = await fetch(
+    const clubResponse = await fetch(
       `https://api.football-data.org/v4/teams/${clubId}`,
       {
         headers: {
@@ -18,8 +19,19 @@ router.get("/club/:id", async (req, res) => {
       }
     );
 
-    const data = await response.json();
-    res.json(data);
+    const apiClubData = await clubResponse.json();
+
+    const standingsResponse = await fetch(
+      `https://api.football-data.org/v4/competitions/${competitionId}/standings`,
+      {
+        headers: {
+          "X-Auth-Token": process.env.API_KEY,
+        },
+      }
+    );
+    const apiStandingsData = await standingsResponse.json();
+    res.json({ apiClubData, apiStandingsData });
+
   } catch (error) {
     console.log("Error fetching club data:", error);
     res.status(500).send("Error fetching club data");
@@ -76,12 +88,14 @@ router.get("/competitionTeams/:id", (req, res) => {
 // CREATE a pinned club
 router.post("/pins/club", withTokenAuth, async (req, res) => {
   try {
-    const { selectedClubId, selectedClubName } = req.body;
+    const { selectedClubId, selectedClubName, selectedCompetitionId } =
+      req.body;
 
     const newClub = await Club.create({
       apiClubId: selectedClubId,
       apiClubName: selectedClubName,
       UserId: req.tokenData.id,
+      apiCompetitionId: selectedCompetitionId,
     });
     res.status(201).json(newClub);
   } catch (error) {
@@ -125,12 +139,13 @@ router.get("/pins", withTokenAuth, async (req, res) => {
 
     const clubsData = await Club.findAll({
       where: { UserId: userId },
-      attributes: ["apiClubId", "apiClubName"],
+      attributes: ["apiClubId", "apiClubName", "apiCompetitionId"],
     });
 
     const apiClubs = clubsData.map((club) => ({
       dbClubId: club.apiClubId,
       dbClubName: club.apiClubName,
+      dbCompetitionId: club.apiCompetitionId
     }));
 
     res.status(201).json(apiClubs);
@@ -143,9 +158,9 @@ router.get("/pins", withTokenAuth, async (req, res) => {
 //Last 10 games
 router.get("/clubSchedLast/:id", async (req, res) => {
   const clubId = req.params.id;
-  let dateNow = moment().format('YYYY-MM-DD')
-  let dateLast = moment().subtract('10', 'weeks').format('YYYY-MM-DD')
- 
+  let dateNow = moment().format("YYYY-MM-DD");
+  let dateLast = moment().subtract("10", "weeks").format("YYYY-MM-DD");
+
   try {
     const response = await fetch(
       `https://api.football-data.org/v4/teams/${clubId}/matches?dateFrom=${dateLast}&dateTo=${dateNow}`,
@@ -167,8 +182,8 @@ router.get("/clubSchedLast/:id", async (req, res) => {
 //Next 10 games
 router.get("/clubSched/:id", async (req, res) => {
   const clubId = req.params.id;
-  let dateNow = moment().format('YYYY-MM-DD')
-  let dateNext = moment().add('10', 'weeks').format('YYYY-MM-DD')
+  let dateNow = moment().format("YYYY-MM-DD");
+  let dateNext = moment().add("10", "weeks").format("YYYY-MM-DD");
 
   try {
     const response = await fetch(
