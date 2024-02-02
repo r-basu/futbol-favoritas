@@ -1,6 +1,7 @@
 const { Model, DataTypes } = require("sequelize");
 const sequelize = require("../config/connection");
 const User = require("./User");
+const Competition = require("./Competition");
 
 class Club extends Model {}
 
@@ -20,6 +21,14 @@ Club.init(
       references: {
         model: User,
         key: "id",
+      },
+    },
+    apiCompetitionId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: Competition,
+        key: "apiCompetitionId",
       },
     },
   },
