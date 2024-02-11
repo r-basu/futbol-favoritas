@@ -90,4 +90,16 @@ router.post("/logout", withTokenAuth, (req, res) => {
     });
 });
 
+//Verify User Token
+router.post("/verify-token", (req, res) => {
+  const { token } = req.body;
+
+  try {
+    jwt.verify(token, process.env.JWT_SECRET);
+    res.status(200).json({ msg: "Token is valid" });
+  } catch (error) {
+    res.status(401).json({ msg: "Invalid token" });
+  }
+});
+
 module.exports = router;
